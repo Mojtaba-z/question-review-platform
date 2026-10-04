@@ -29,7 +29,7 @@ The sample accounts are `teacher1`, `student1`, `student2`, and `student3`. The 
 Run the tests after creating migrations:
 
 ```bash
-docker compose exec web python manage.py test accounts question_bank practice
+docker compose exec web pytest
 ```
 
 ## Authentication
