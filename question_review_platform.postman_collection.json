@@ -1,0 +1,541 @@
+{
+  "info": {
+    "_postman_id": "f33ed298-36c5-4e29-a4be-e15ed4959f22",
+    "name": "Question Review Platform API",
+    "description": "Run requests in order. Start the Django/PostgreSQL containers and apply migrations. Create the teacher and grade-three skills with: docker compose exec web python manage.py seed_demo --password TestPass1234. The seed command only sets passwords for newly created users. Use a fresh student_username and fresh question IDs/prompts when repeating this flow. Tokens and IDs are stored as collection variables by response scripts. Response type codes: 1 integer, 2 decimal, 3 short text, 4 multiple choice. Validation status codes: 1 accepted, 2 rejected, 3 flagged.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "noauth"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "student_username",
+      "value": "postman_student"
+    },
+    {
+      "key": "student_password",
+      "value": "TestPass1234"
+    },
+    {
+      "key": "teacher_username",
+      "value": "teacher1"
+    },
+    {
+      "key": "teacher_password",
+      "value": "TestPass1234"
+    },
+    {
+      "key": "skill_slug",
+      "value": "two_digit_addition"
+    },
+    {
+      "key": "import_id_1",
+      "value": "postman_q_001"
+    },
+    {
+      "key": "import_id_2",
+      "value": "postman_q_002"
+    },
+    {
+      "key": "question_prompt_1",
+      "value": "What is 17 + 25?"
+    },
+    {
+      "key": "question_prompt_2",
+      "value": "What is 18 + 24?"
+    },
+    {
+      "key": "student_access",
+      "value": ""
+    },
+    {
+      "key": "student_refresh",
+      "value": ""
+    },
+    {
+      "key": "teacher_access",
+      "value": ""
+    },
+    {
+      "key": "question_id",
+      "value": ""
+    },
+    {
+      "key": "attempt_id",
+      "value": ""
+    },
+    {
+      "key": "student_profile_id",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Accounts",
+      "item": [
+        {
+          "name": "1. Register student",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/auth/register/",
+            "description": "Public. Creates a grade-three student; a caller cannot choose the teacher role. Saves student JWTs.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{student_username}}\",\n  \"password\": \"{{student_password}}\",\n  \"email\": \"postman.student@example.com\",\n  \"grade\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "if (pm.response.code === 201) {",
+                  "    const data = pm.response.json();",
+                  "    pm.collectionVariables.set(\"student_access\", data.access);",
+                  "    pm.collectionVariables.set(\"student_refresh\", data.refresh);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Login student",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/auth/login/",
+            "description": "Public. Logs in the registered student and refreshes the saved student JWTs.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{student_username}}\",\n  \"password\": \"{{student_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    const data = pm.response.json();",
+                  "    pm.collectionVariables.set(\"student_access\", data.access);",
+                  "    pm.collectionVariables.set(\"student_refresh\", data.refresh);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Login teacher",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/auth/login/",
+            "description": "Public. Logs in teacher1, created by seed_demo. Saves the teacher access JWT.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{teacher_username}}\",\n  \"password\": \"{{teacher_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    const data = pm.response.json();",
+                  "    pm.collectionVariables.set(\"teacher_access\", data.access);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Refresh student access token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/auth/refresh/",
+            "description": "Public. Exchanges the saved student refresh JWT for a new access JWT.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{student_refresh}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    const data = pm.response.json();",
+                  "    pm.collectionVariables.set(\"student_access\", data.access);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Question bank",
+      "item": [
+        {
+          "name": "5. Import question batch",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/questions/import/",
+            "description": "Teacher only. Imports one accepted and one rejected question. Both are stored; only the accepted item can appear in practice. Change IDs and prompts before running this request again.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{teacher_access}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"id\": \"{{import_id_1}}\",\n    \"skill\": \"{{skill_slug}}\",\n    \"grade\": 3,\n    \"prompt_en\": \"{{question_prompt_1}}\",\n    \"response_type\": 1,\n    \"requested_difficulty\": 2,\n    \"assessed_difficulty\": null,\n    \"source_question_ids\": [\n      \"wk_postman_001\"\n    ],\n    \"generation_config\": {\n      \"prompt_version\": \"postman\"\n    },\n    \"validation_status\": 1,\n    \"validation_reasons\": [\n      \"manual_test\"\n    ]\n  },\n  {\n    \"id\": \"{{import_id_2}}\",\n    \"skill\": \"{{skill_slug}}\",\n    \"grade\": 3,\n    \"prompt_en\": \"{{question_prompt_2}}\",\n    \"response_type\": 1,\n    \"requested_difficulty\": 2,\n    \"assessed_difficulty\": null,\n    \"source_question_ids\": [\n      \"wk_postman_002\"\n    ],\n    \"generation_config\": {\n      \"prompt_version\": \"postman\"\n    },\n    \"validation_status\": 2,\n    \"validation_reasons\": [\n      \"manual_test\"\n    ]\n  }\n]",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Practice and review",
+      "item": [
+        {
+          "name": "6. Get next question",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/practice/next/?skill={{skill_slug}}",
+            "description": "Student only. Selects an accepted question for the student grade and saves its ID.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{student_access}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    const data = pm.response.json();",
+                  "    pm.collectionVariables.set(\"question_id\", data.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7. Submit answer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/attempts/",
+            "description": "Student only. Creates a pending attempt. Saves the attempt ID and student profile ID.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{student_access}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question_item\": \"{{question_id}}\",\n  \"submitted_answer\": \"42\",\n  \"time_spent_seconds\": 20\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "if (pm.response.code === 201) {",
+                  "    const data = pm.response.json();",
+                  "    pm.collectionVariables.set(\"attempt_id\", data.id);",
+                  "    pm.collectionVariables.set(\"student_profile_id\", data.student);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8. List pending attempts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/attempts/pending/",
+            "description": "Teacher only. Returns pending attempts, including any created by seed_demo.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{teacher_access}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "9. Review attempt",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/attempts/{{attempt_id}}/review/",
+            "description": "Teacher only. Marks the saved attempt correct. Set correct to false to mark it incorrect. An attempt can be reviewed only once.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{teacher_access}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correct\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "10. Activity report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/reports/activity/?student={{student_profile_id}}&skill={{skill_slug}}",
+            "description": "Teacher only. The student query parameter is a Student profile ID, saved from the submission response, not a Django user ID.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{teacher_access}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "11. Database health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/health/",
+            "description": "Public. Returns HTTP 200 with status=ok and database=ok when PostgreSQL is reachable.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
