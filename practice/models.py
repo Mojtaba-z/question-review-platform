@@ -31,7 +31,11 @@ class Attempt(BaseModel):
     time_spent_seconds = models.PositiveIntegerField(null=True, blank=True)
 
     class Meta:
-        """Support recent-attempt exclusion and the pending-review query."""
+        """Define indexes for practice selection and the review queue.
+
+        Student and descending creation time help find recent attempts. Review
+        state and creation time help list pending submissions for teachers.
+        """
 
         indexes = [
             models.Index(fields=['student', '-created_at'], name='attempt_recent_idx'),
@@ -39,6 +43,10 @@ class Attempt(BaseModel):
         ]
 
     def __str__(self):
-        """Return the student and question IDs for logs and Django admin."""
+        """Return a compact label for an attempt.
+
+        The label combines the student profile ID and upstream question ID so
+        logs and Django admin can identify the linked records.
+        """
 
         return f'{self.student_id}: {self.question_item_id}'

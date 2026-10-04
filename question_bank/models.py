@@ -1,3 +1,5 @@
+from enum import IntEnum
+
 from django.db import models
 
 from question_review_platform.base_models import BaseModel
@@ -17,35 +19,47 @@ class Skill(BaseModel):
     learning_objective = models.TextField()
 
     def __str__(self):
-        """Return the name shown for this skill in Django admin and logs."""
+        """Return the human-readable name for this skill.
+
+        Django admin and logs display this name when they represent a skill
+        as text; its slug remains the identifier used by APIs and relations.
+        """
 
         return self.name
 
 
-class ResponseType(models.TextChoices):
+class ResponseType(IntEnum):
     """Enumerate response formats permitted by the upstream JSON contract.
 
     This describes the expected shape of a student's response. It does not
     provide an answer key or enable automatic grading.
     """
 
-    INTEGER = 'integer', 'Integer'
-    DECIMAL = 'decimal', 'Decimal'
-    SHORT_TEXT = 'short_text', 'Short text'
-    MULTIPLE_CHOICE = 'multiple_choice', 'Multiple choice'
+    INTEGER = 1
+    DECIMAL = 2
+    SHORT_TEXT = 3
+    MULTIPLE_CHOICE = 4
 
 
-class ValidationStatus(models.TextChoices):
-    """Enumerate the upstream labels preserved with each imported question.
+class ValidationStatus(IntEnum):
+    """Enumerate the numeric validation codes stored with each question.
 
-    Import validation still runs locally. Only an item stored with ``accepted``
-    status is eligible for the practice queue; rejected and flagged items remain
+    Import validation still runs locally. Only an item stored with the accepted
+    code is eligible for the practice queue; rejected and flagged items remain
     in the database for traceability.
     """
 
-    ACCEPTED = 'accepted', 'Accepted'
-    REJECTED = 'rejected', 'Rejected'
-    FLAGGED = 'flagged', 'Flagged'
+    ACCEPTED = 1
+    REJECTED = 2
+    FLAGGED = 3
+
+
+RESPONSE_TYPE_CHOICES = [
+    (item.value, item.name.replace('_', ' ').capitalize()) for item in ResponseType
+]
+VALIDATION_STATUS_CHOICES = [
+    (item.value, item.name.capitalize()) for item in ValidationStatus
+]
 
 
 class QuestionItem(BaseModel):
@@ -62,16 +76,20 @@ class QuestionItem(BaseModel):
     grade = models.PositiveSmallIntegerField()
     prompt_en = models.TextField()
     prompt_hash = models.CharField(max_length=64, unique=True, editable=False)
-    response_type = models.CharField(max_length=32, choices=ResponseType.choices)
+    response_type = models.IntegerField(choices=RESPONSE_TYPE_CHOICES)
     requested_difficulty = models.IntegerField()
     assessed_difficulty = models.IntegerField(null=True, blank=True)
     source_question_ids = models.JSONField()
     generation_config = models.JSONField()
-    validation_status = models.CharField(max_length=16, choices=ValidationStatus.choices)
+    validation_status = models.IntegerField(choices=VALIDATION_STATUS_CHOICES)
     validation_reasons = models.JSONField()
 
     class Meta:
-        """Index skill, grade, and status filtering for practice selection."""
+        """Define the index used when selecting practice questions.
+
+        The composite index follows the skill, grade, and validation-status
+        filters applied before choosing an eligible item.
+        """
 
         indexes = [
             models.Index(
@@ -81,6 +99,10 @@ class QuestionItem(BaseModel):
         ]
 
     def __str__(self):
-        """Return the upstream identifier used in imports and API responses."""
+        """Return the question's upstream identifier as its display value.
+
+        The primary key is preserved during import and is also the ID exposed
+        by question and attempt responses.
+        """
 
         return self.pk

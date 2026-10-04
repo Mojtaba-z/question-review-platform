@@ -13,6 +13,10 @@ class BaseModel(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        """Make timestamp fields inherit without a separate base-model table."""
+        """Keep the timestamp mixin abstract.
+
+        Concrete child models receive both timestamp columns, while Django
+        creates no standalone table for ``BaseModel``.
+        """
 
         abstract = True

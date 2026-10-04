@@ -44,7 +44,7 @@ class QuestionSelectorService:
             QuestionItem.objects.filter(
                 skill=skill,
                 grade=student.grade,
-                validation_status=ValidationStatus.ACCEPTED,
+                validation_status=ValidationStatus.ACCEPTED.value,
             )
             .exclude(pk__in=recent_ids)
             .order_by('id')

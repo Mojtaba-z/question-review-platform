@@ -6,6 +6,11 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+    """Create student attempts in the initial practice schema.
+
+    This depends on the student and question tables and stores submission,
+    review, and timing fields with indexes for recent attempts and reviews.
+    """
 
     initial = True
 

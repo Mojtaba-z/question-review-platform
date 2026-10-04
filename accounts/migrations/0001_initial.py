@@ -6,6 +6,11 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+    """Create student profiles in the initial accounts schema.
+
+    The migration adds profile timestamps, the user relationship, a grade
+    index, and the one-profile-per-user database constraint.
+    """
 
     initial = True
 

@@ -51,7 +51,11 @@ class AttemptSerializer(serializers.ModelSerializer):
     """
 
     class Meta:
-        """Define the attempt fields available in API responses."""
+        """Select the model and fields for attempt responses.
+
+        The response includes submission details and nullable review fields,
+        allowing callers to distinguish pending from reviewed attempts.
+        """
 
         model = Attempt
         fields = (

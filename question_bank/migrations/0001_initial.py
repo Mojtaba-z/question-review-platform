@@ -5,6 +5,11 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+    """Create skills and imported questions in the initial bank schema.
+
+    The migration stores upstream question metadata and adds the index used
+    when filtering practice questions by skill, grade, and status.
+    """
 
     initial = True
 

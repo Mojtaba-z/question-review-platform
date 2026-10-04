@@ -36,7 +36,7 @@ class AttemptService:
         question = QuestionItem.objects.filter(pk=data['question_item']).first()
         if (
             question is None
-            or question.validation_status != ValidationStatus.ACCEPTED
+            or question.validation_status != ValidationStatus.ACCEPTED.value
             or question.grade != student.grade
         ):
             raise PracticeInputError('This question is not available to the student.')

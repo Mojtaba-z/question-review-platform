@@ -7,7 +7,7 @@ from accounts.constants import STUDENT_GROUP, TEACHER_GROUP
 from accounts.models import Student
 from accounts.services.roles import RoleService
 from practice.models import Attempt
-from question_bank.models import QuestionItem, Skill, ValidationStatus
+from question_bank.models import QuestionItem, ResponseType, Skill, ValidationStatus
 from question_bank.services.import_questions import QuestionImportService
 
 
@@ -87,16 +87,16 @@ class Command(BaseCommand):
                 else f'What fraction is {number - 8} out of 10?'
             )
             status = (
-                ValidationStatus.ACCEPTED if number <= 10
-                else ValidationStatus.REJECTED if number <= 13
-                else ValidationStatus.FLAGGED
+                ValidationStatus.ACCEPTED.value if number <= 10
+                else ValidationStatus.REJECTED.value if number <= 13
+                else ValidationStatus.FLAGGED.value
             )
             items.append({
                 'id': item_id,
                 'skill': skill,
                 'grade': 3,
                 'prompt_en': prompt,
-                'response_type': 'short_text',
+                'response_type': ResponseType.SHORT_TEXT.value,
                 'requested_difficulty': 2,
                 'assessed_difficulty': 2,
                 'source_question_ids': [f'wk_{number:03d}'],
