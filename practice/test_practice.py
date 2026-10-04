@@ -102,7 +102,8 @@ def test_next_question_is_student_only(
     """Return an eligible question only to a student.
 
     Input: The same queue GET from student and teacher users.
-    Output: Student gets HTTP 200 with question ``q1``; teacher gets HTTP 403.
+    Output: Student gets HTTP 200 with question ``q1`` and its response type
+    enum name; teacher gets HTTP 403.
     """
 
     question_factory('q1')
@@ -111,7 +112,7 @@ def test_next_question_is_student_only(
     response = api_client.get(url)
     assert response.status_code == 200
     assert response.data['id'] == 'q1'
-    assert response.data['response_type'] == ResponseType.INTEGER.value
+    assert response.data['response_type'] == ResponseType.INTEGER.name
 
     api_client.force_authenticate(user=teacher_user)
     assert api_client.get(url).status_code == 403

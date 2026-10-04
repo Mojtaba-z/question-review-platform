@@ -3,7 +3,7 @@
 from rest_framework import serializers
 
 from question_bank.models import (
-    QuestionItem, RESPONSE_TYPE_CHOICES, VALIDATION_STATUS_CHOICES,
+    QuestionItem, RESPONSE_TYPE_CHOICES, ResponseType, VALIDATION_STATUS_CHOICES,
 )
 
 
@@ -34,11 +34,25 @@ class PracticeQuestionSerializer(serializers.ModelSerializer):
     """Turn a stored question into the learner-facing response.
 
     Input is a ``QuestionItem`` selected by the practice service. Output
-    contains its ID, skill slug, grade, prompt, and numeric response type. Generation
-    metadata, validation notes, and internal duplicate hash are omitted.
+    contains its ID, skill slug, grade, prompt, and response type enum name
+    such as ``SHORT_TEXT``. Generation metadata, validation notes, and the
+    internal duplicate hash are omitted.
     """
 
     skill = serializers.CharField(source='skill_id')
+    response_type = serializers.SerializerMethodField()
+
+    def get_response_type(self, question):
+        """Return the enum name for a question's stored response type code.
+
+        Args:
+            question: ``QuestionItem`` being serialized for a student.
+
+        Returns:
+            The ``ResponseType`` member name, such as ``INTEGER``.
+        """
+
+        return ResponseType(question.response_type).name
 
     class Meta:
         """Select the model and fields for learner-facing output.

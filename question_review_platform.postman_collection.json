@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "f33ed298-36c5-4e29-a4be-e15ed4959f22",
     "name": "Question Review Platform API",
-    "description": "Run requests in order. Start the Django/PostgreSQL containers and apply migrations. Create the teacher and grade-three skills with: docker compose exec web python manage.py seed_demo --password TestPass1234. The seed command only sets passwords for newly created users. Use a fresh student_username and fresh question IDs/prompts when repeating this flow. Tokens and IDs are stored as collection variables by response scripts. Response type codes: 1 integer, 2 decimal, 3 short text, 4 multiple choice. Validation status codes: 1 accepted, 2 rejected, 3 flagged.",
+    "description": "Run requests in order. Start the Django/PostgreSQL containers and apply migrations. Create the teacher and grade-three skills with: docker compose exec web python manage.py seed_demo --password TestPass1234. The seed command only sets passwords for newly created users. Use a fresh student_username and fresh question IDs/prompts when repeating this flow. Tokens and IDs are stored as collection variables by response scripts. Response type codes: 1 integer, 2 decimal, 3 short text, 4 multiple choice. Validation status codes: 1 accepted, 2 rejected, 3 flagged. The practice question response returns response_type as an enum name, for example INTEGER.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -314,7 +314,7 @@
             "method": "GET",
             "header": [],
             "url": "{{base_url}}/api/practice/next/?skill={{skill_slug}}",
-            "description": "Student only. Selects an accepted question for the student grade and saves its ID.",
+            "description": "Student only. Selects an accepted question for the student grade and saves its ID. The response_type in the response is an enum name such as INTEGER or SHORT_TEXT.",
             "auth": {
               "type": "bearer",
               "bearer": [
